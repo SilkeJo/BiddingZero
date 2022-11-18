@@ -1,7 +1,6 @@
 ******Generate Regression Data Set
 clear
 set more off
-global dirpath="C:/Users/JOHANNS/EnBW AG/C-UE C-UM - Dokumente/Team/Silke/Stata/Spain/Data"
 
 cd "$dirpath/Final"
 gen year=0
