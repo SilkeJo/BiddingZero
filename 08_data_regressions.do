@@ -1,7 +1,6 @@
 ******Generate Regression Data Set
 clear
 set more off
-
 cd "$dirpath/Final"
 gen year=0
 save regressions.dta, replace
