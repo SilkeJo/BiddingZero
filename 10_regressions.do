@@ -1,7 +1,6 @@
 *******Regression analysis
 clear
 set more off
-global dirpath="C:/Users/JOHANNS/EnBW AG/C-UE C-UM - Dokumente/Team/Silke/Stata/Spain/Data"
 
 clear
 cd "$dirpath/Final"
