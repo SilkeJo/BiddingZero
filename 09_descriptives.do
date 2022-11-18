@@ -1,6 +1,5 @@
 clear
 set more off
-global dirpath="C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Do-Files_new\for submission\Data"
 
 ****Figures and Tables
 **solar_pbids.dta cannot be uploaded because it is too large
