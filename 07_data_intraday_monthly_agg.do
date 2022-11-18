@@ -5,7 +5,6 @@ set type double
 set more off
 program drop _all
 mat drop _all
-global dirpath="C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Data"
 
 forvalues p =1(1)6 {
 forvalues y = 2020(1)2020 {
