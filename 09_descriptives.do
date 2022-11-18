@@ -3,16 +3,17 @@ set more off
 global dirpath="C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Do-Files_new\for submission\Data"
 
 ****Figures and Tables
-clear
-cd "$dirpath/Final"
-use solar_pbids.dta
+**solar_pbids.dta cannot be uploaded because it is too large
+*clear
+*cd "$dirpath/Final"
+*use solar_pbids.dta
 
 *Figure 2: Histogram of all solar price bids
-set scheme s1mono
-hist pbid, xtitle("Price bids (€/MWh)", size(medium)) ytitle("Density (%)", size(medium)) percent graphregion(fcolor(white)) lcolor(nsvy) fcolor(ebblue) xsize(4) width(5) lwidth(0.1) xlabel(,labsize(small)) ylabel(,labsize(small)) ysc(titlegap(*3)) xsc(titlegap(*3))
-cd "$dirpath/Final/Graphs"
-graph export "02_Histogram_PriceBids_Solar.png", replace
-graph close
+*set scheme s1mono
+*hist pbid, xtitle("Price bids (€/MWh)", size(medium)) ytitle("Density (%)", size(medium)) percent graphregion(fcolor(white)) lcolor(nsvy) fcolor(ebblue) xsize(4) width(5) lwidth(0.1) xlabel(,labsize(small)) ylabel(,labsize(small)) ysc(titlegap(*3)) xsc(titlegap(*3))
+*cd "$dirpath/Final/Graphs"
+*graph export "02_Histogram_PriceBids_Solar.png", replace
+*graph close
 
 *Figure 3: price bids of preselected firms
 clear
