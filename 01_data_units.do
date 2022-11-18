@@ -1,8 +1,7 @@
 *Unit Data
 clear all
-global dirpath="C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Data"
 
-**additional info
+*Additional unit info
 cd "$dirpath\Units"
 clear
 import excel unitlocation.xlsx
