@@ -151,7 +151,7 @@ use regressions.dta
 
 sum diff_p_id_da q_total_mg_id load_ACT solar_share wind_share hydro_share gas_share coal_share oil_share other_share co2price gasprice solar_fc_error wind_fc_error load_fc_error $dummies
 drop if pbid_max==0
-sum pbid_max load_ACT solar_share wind_share hydro_share gas_share coal_share oil_share other_share co2price gasprice solar_fc_error wind_fc_error load_fc_error $dummies
+sum pbid_max mg_price_id_max load_ACT solar_share wind_share hydro_share gas_share coal_share oil_share other_share co2price gasprice solar_fc_error wind_fc_error load_fc_error $dummies
 
 *Figure 6 and 7
 bysort year month day hour owner: egen q_total_supply_unit_a_all=total(q_total_supply_unit_a)
