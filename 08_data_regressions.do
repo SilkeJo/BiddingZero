@@ -189,9 +189,7 @@ drop if q_total_mg_id==0
 drop if missing(mg_price_id_max)
 
 drop if missing(mg_price_id_max)
-keep unit date_hour hour year month day name pbid_max diff_p_id_da q_total_mg_id mg_price_id_max diff_p_id_da_m mg_price_id_mean co2price gasprice load_fc_DA load_ACT solar_fc_error wind_fc_error load_fc_error solar_share_fc wind_share_fc load_share load_share_fc solar_share wind_share oil_share coal_share gas_share nuclear_share hydro_share other_share quarter ym ymd yq week summer spring winter weekd weekend weekdays afternoon pbid_dummy diff_dummy 
+keep unit date_hour hour year month day name pbid_max pbid_max_a diff_p_id_da q_total_mg_id mg_price_id_max diff_p_id_da_m mg_price_id_mean co2price gasprice load_fc_DA load_ACT solar_fc_error wind_fc_error load_fc_error solar_share_fc wind_share_fc load_share load_share_fc solar_share wind_share oil_share coal_share gas_share nuclear_share hydro_share other_share quarter ym ymd yq week summer spring winter weekd weekend weekdays afternoon pbid_dummy diff_dummy q_total_supply_unit_id q_total_supply_unit_a pbid_id_1_S_max pbid_id_2_S_max pbid_id_3_S_max pbid_id_4_S_max pbid_id_5_S_max pbid_id_6_S_max
 
-order unit date_hour hour year month day name pbid_max diff_p_id_da q_total_mg_id mg_price_id_max diff_p_id_da_m mg_price_id_mean co2price gasprice load_fc_DA load_ACT solar_fc_error wind_fc_error load_fc_error solar_share_fc wind_share_fc load_share load_share_fc solar_share wind_share oil_share coal_share gas_share nuclear_share hydro_share other_share quarter ym ymd yq week summer spring winter weekd weekend weekdays afternoon pbid_dummy diff_dummy 
-
-cd "$dirpath/Final"
+order unit date_hour hour year month day name pbid_max pbid_max_a diff_p_id_da q_total_mg_id mg_price_id_max diff_p_id_da_m mg_price_id_mean co2price gasprice load_fc_DA load_ACT solar_fc_error wind_fc_error load_fc_error solar_share_fc wind_share_fc load_share load_share_fc solar_share wind_share oil_share coal_share gas_share nuclear_share hydro_share other_share quarter ym ymd yq week summer spring winter weekd weekend weekdays afternoon pbid_dummy diff_dummy q_total_supply_unit_id q_total_supply_unit_a pbid_id_1_S_max pbid_id_2_S_max pbid_id_3_S_max pbid_id_4_S_max pbid_id_5_S_max pbid_id_6_S_maxcd "$dirpath/Final"
 save regressions.dta, replace
