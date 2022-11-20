@@ -214,7 +214,6 @@ ivregress 2sls pbid_max (mg_price_id_max=lag_load_ACT lag_wind_share lag_gaspric
 cd "$dirpath/Final/RegressionResults"
 *outreg2 using 2ndstep_robust.doc, append ctitle(IV 1 Lag large) addstat("Chi²", e(chi2))
 
-***To do
 **More instruments
 ***(3) IV PF
 ivregress 2sls pbid_max (mg_price_id_max=load_ACT solar_share wind_share hydro_share co2price gasprice load_fc_error solar_fc_error wind_fc_error) $fe, vce(cluster yq)
