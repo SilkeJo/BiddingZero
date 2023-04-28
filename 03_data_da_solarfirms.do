@@ -1,26 +1,26 @@
-*Create dataset with all solar day-ahead bids with owner and unit info 
-*Note: this code was written building on Fabra & Reguant (2014) (cf. references) code as published
-*here: https://www.aeaweb.org/articles?id=10.1257/aer.104.9.2872
+*****Day-ahead market bidding data of firms owning solar power
+*Note: this code was written building on Fabra & Reguant (2014) (cf. references) 
+*published here: https://www.aeaweb.org/articles?id=10.1257/aer.104.9.2872
+
 clear matrix
 set type double
 set more off
 program drop _all
 mat drop _all
 
-
 *Monthly data
-forvalues y = 2017(1)2020 {
+forvalues y = 2020(1)2020 {
 forvalues m = 1(1)12 {
 
 clear
 gen year=0
 cd "$dirpath/Day-Ahead/Monthly"
-save solar_pbids_`y'_`m'.dta, replace
+save solar_da_`y'_`m'.dta, replace
 
 forvalues d = 1(1)31 {
 local file =  `y'*10000 + `m'*100 + `d'
 local ordner = `y'*100 + `m'
-cd "$dirpath/Day-Ahead/Rawdata/curva_pbc_uof_`ordner'"
+cd "C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Data/Day-Ahead/Rawdata/curva_pbc_uof_`ordner'"
 *check if this day exists
 capture confirm file `"curva_pbc_uof_`file'.1"'
 di `file'
@@ -97,10 +97,9 @@ drop _merge
 	replace ownership=ownership4 if exp3==1
 	drop exp* _merge owner4 ownership4 
 
-*only supply bids of solar power sold in MIBEL and ES
+*only bids of firms owning solar power sold in MIBEL and ES
 drop if country=="PT"
-drop if plant_type!="Solar PV" & plant_type!="Solar" & plant_type!="Thermal Solar"
-drop if type!="S"	
+drop if solar!=1
 	
 *create equilibrium price
 	sort hour country 
@@ -117,19 +116,29 @@ drop if type!="S"
 	*(and the other way around for S)
 	gen rejected_temp = 0
 	replace rejected_temp = 1 if pbid < mg_price & type == "S" & accepted == 0
-	replace rejected_temp = 1 if pbid > mg_price & type == "D" & accepted == 0
 	sort unit hour pbid 
 	by unit: egen rejected = max(rejected_temp)
 	replace rejected = 0 if accepted == 1
 	drop rejected_temp
-
-keep year month day hour unit owner pbid mwh mg_price accepted rejected
-order year month day hour unit owner pbid mwh mg_price accepted rejected
 	
+*maximum (accepted) price bid of solar power plants
+*quantities sold, offered, demanded and bought day-ahead by unit
+	sort hour unit pbid mwh 
+	by hour unit: egen q_total_supply_unit=total(mwh) if type=="S"
+	by hour unit: egen q_total_supply_unit_a=total(mwh) if type=="S"&accepted==1
+	by hour unit: egen q_total_demand_unit=total(mwh) if type=="D"
+	by hour unit: egen q_total_demand_unit_a=total(mwh) if type=="D"&accepted==1
+	bysort hour unit: egen pbid_max_solar=max(pbid) if strpos(plant_type,"Solar")==1
+	bysort hour unit: egen pbid_max_a_solar=max(pbid) if accepted == 1& strpos(plant_type,"Solar")==1
+	duplicates drop hour unit, force
+
+keep year month day hour unit owner pbid pbid_max_solar pbid_max_a_solar q_total_supply_unit* q_total_demand_unit q_total_demand_unit_a mg_price plant_type
+order year month day hour unit owner pbid pbid_max_solar pbid_max_a_solar q_total_supply_unit* q_total_demand_unit q_total_demand_unit_a mg_price plant_type
+
 	compress
 	cd "$dirpath/Day-Ahead/Monthly"
-    append using solar_pbids_`y'_`m'.dta 
-	save solar_pbids_`y'_`m'.dta, replace
+    append using solar_da_`y'_`m'.dta 
+	save solar_da_`y'_`m'.dta, replace
 	
 	sleep 10000
 }
@@ -137,20 +146,55 @@ order year month day hour unit owner pbid mwh mg_price accepted rejected
 }
 }
 
-*Merge monthly bids
+*Merge monthly bids and aggregate by owner
 cd "$dirpath/Final"
-save solar_pbids.dta, replace
+clear
+gen year=0
+save solar_da.dta, replace
 
-forvalues y = 2017(1)2020 {
+forvalues y = 2020(1)2020 {
 forvalues m = 1(1)12 {
 clear
 cd "$dirpath/Day-Ahead/Monthly"
-use solar_pbids_`y'_`m'.dta
-
-drop if missing("name")
- 
+use solar_da_`y'_`m'.dta
+duplicates drop hour unit, force
+sort year month day hour owner
+bysort day hour owner: egen q_total_offered_da=total(q_total_supply_unit)
+bysort day hour owner: egen q_total_sold_da=total(q_total_supply_unit_a) 
+bysort day hour owner: egen q_total_offered_da_sol=total(q_total_supply_unit) /// 
+if strpos(plant_type,"Solar")==1
+bysort day hour owner: egen q_total_sold_da_sol=total(q_total_supply_unit_a) /// 
+if strpos(plant_type,"Solar")==1
+bysort day hour owner: egen q_total_bought_da=total(q_total_demand_unit) 
+bysort day hour owner: egen q_total_demand_da=total(q_total_demand_unit_a)
+bysort day hour owner: egen pbid_max_sol=max(pbid_max_solar) 
+bysort day hour owner: egen pbid_max_a_sol=max(pbid_max_a_solar) 
+duplicates drop year month day hour owner, force
+keep year month day hour unit owner pbid_max_sol pbid_max_a_sol q_total_sold* q_total_bought* q_total_demand_da q_total_of* mg_price 
 cd "$dirpath/Final"
-append using solar_pbids.dta, force
+append using solar_da.dta, force
+save solar_da.dta, replace
+sleep 10000
+}
+}
+
+
+*Merge monthly bids and keep only solar power plants
+cd "$dirpath/Final"
+clear
+gen year=0
+save solar_pbids.dta, replace
+
+forvalues y = 2020(1)2020 {
+forvalues m = 1(1)12 {
+clear
+cd "$dirpath/Day-Ahead/Monthly"
+use solar_da_`y'_`m'.dta
+drop if strpos(plant_type,"Solar")!=1
+duplicates drop year month day hour unit, force
+keep year month day hour unit owner pbid_max_sol pbid_max_a_sol 
+cd "$dirpath/Final"
+append using solar_pbids.dta
 save solar_pbids.dta, replace
 sleep 10000
 }
