@@ -6,7 +6,7 @@
 
 clear
 *Set your own path
-global dirpath="C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review"
+global dirpath="yourpath"
 
 **1) Create Datasets
 * do "$dirpath/01_data_units.do"
