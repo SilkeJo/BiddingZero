@@ -3,7 +3,7 @@ clear
 set more off
 cd "$dirpath/Final"
 gen year=0
-save regressions.dta, replace
+save regressions_price.dta, replace
 
 ****Merge monthly datasets for firm 1
 forvalues y = 2017(1)2020 {
@@ -68,8 +68,8 @@ egen pbid_id_max_S = rmax(pbid_id_1_S_max pbid_id_2_S_max pbid_id_3_S_max ///
 egen mg_price_id_max = rmax(mg_price_id*)
  
 cd "$dirpath/Final"
-append using regressions.dta, force
-save regressions.dta, replace
+append using regressions_price.dta, force
+save regressions_price.dta, replace
 sleep 10000
 }
 }
@@ -77,7 +77,7 @@ sleep 10000
 ****Add controls
 clear 
 cd "$dirpath/Final"
-use regressions.dta
+use regressions_price.dta
 
 gen date=mdy(month, day, year)
 format date %td
@@ -192,4 +192,4 @@ drop if missing(mg_price_id_max)
 keep unit date_hour hour year month day name pbid_max pbid_max_a diff_p_id_da q_total_mg_id mg_price_id_max diff_p_id_da_m mg_price_id_mean co2price gasprice load_fc_DA load_ACT solar_fc_error wind_fc_error load_fc_error solar_share_fc wind_share_fc load_share load_share_fc solar_share wind_share oil_share coal_share gas_share nuclear_share hydro_share other_share quarter ym ymd yq week summer spring winter weekd weekend weekdays afternoon pbid_dummy diff_dummy q_total_supply_unit_id q_total_supply_unit_a pbid_id_1_S_max pbid_id_2_S_max pbid_id_3_S_max pbid_id_4_S_max pbid_id_5_S_max pbid_id_6_S_max
 
 order unit date_hour hour year month day name pbid_max pbid_max_a diff_p_id_da q_total_mg_id mg_price_id_max diff_p_id_da_m mg_price_id_mean co2price gasprice load_fc_DA load_ACT solar_fc_error wind_fc_error load_fc_error solar_share_fc wind_share_fc load_share load_share_fc solar_share wind_share oil_share coal_share gas_share nuclear_share hydro_share other_share quarter ym ymd yq week summer spring winter weekd weekend weekdays afternoon pbid_dummy diff_dummy q_total_supply_unit_id q_total_supply_unit_a pbid_id_1_S_max pbid_id_2_S_max pbid_id_3_S_max pbid_id_4_S_max pbid_id_5_S_max pbid_id_6_S_maxcd "$dirpath/Final"
-save regressions.dta, replace
+save regressions_price.dta, replace
