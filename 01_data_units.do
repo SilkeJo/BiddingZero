@@ -1,8 +1,7 @@
-*Unit Data
+*****Unit Data
 clear all
-
-*Additional unit info
-cd "$dirpath\Units"
+***Import Excel with additional info on units collected via web-search
+cd "$dirpath\Units\Units"
 clear
 import excel unitlocation.xlsx
 rename A unit
@@ -13,12 +12,12 @@ gen size2=real(B)
 drop if _n==1
 drop B
 duplicates drop unit, force
-**correct 
+*harmonization of two region names
 replace regionname="Castilla-La Mancha" if regionname=="Castilla La Mancha"
 replace regionname="Castilla y León" if regionname=="Castilla-León"
 save unitlocation.dta, replace
 
-***OMIE Data (less information)
+***Import OMIE Unit Data (less information)
 clear
 import excel units_OMIE.xls
 rename A unit
@@ -32,7 +31,7 @@ rename G country
 drop if unit=="CODIGO"
 save units_omie.dta, replace
 
-***REE Data (more information)
+***Import REE unit Data (more information)
 clear
 import excel units_REE.xlsx
 rename A unit
@@ -50,7 +49,7 @@ drop mw2 dup
 drop if unit=="CÃ³digo de UF"
 save units_ree.dta, replace
 
-***Add OMIE Units and join info when possible
+***Merge OMIE and REE Units and join info when possible
 append using units_omie.dta
 gsort unit -mw
 duplicates tag unit, gen(dup)
@@ -62,7 +61,7 @@ by unit: replace country=country[_n+1] if dup==1&nvals==1&ownership==.
 duplicates drop unit owner, force
 drop dup nvals
 save unitdata.dta, replace
-*half is REE data, half is OMIE data
+*Note: ~half is REE data, ~half is OMIE data
 
 ***Rename plant_type and extract information from plant names or owners
 replace plant_type="Renewable" if strpos(name, "RENOVABLE")
@@ -84,7 +83,7 @@ replace plant_type="Wind Onshore" if strpos(name,"EOL.")
 replace plant_type="Wind Onshore" if strpos(owner, "WIND TO MARKET")
 replace plant_type="Solar" if strpos(owner, "SOLAR")
 
-*rename plant_types from Spanish to English 
+***Rename plant_types from Spanish to English 
 replace plant_type="Cogeneration Gas" if plant_type=="Gas Natural CogeneraciÃ³n"
 replace plant_type="Oil/Coal Derivates" if /// 
 plant_type=="Derivados del petrÃ³leo Ã³ carbÃ³n"
@@ -133,15 +132,9 @@ replace plant_type="Marketer Services of Last Resort" if plant_type=="COMERCIALI
 replace plant_type="Forwarded units" if plant_type=="GENERICA"
 replace plant_type="Self-Consumer" if plant_type=="AUTOPRODUCTORES"
 
-*owner is replaced by UP because it represents the aggregation of physical units by technology and BRP
-*replace owner = vin_UP if missing(owner)
-*egen firm_code = group(owner) if plant_type=="Solar PV" | plant_type=="Solar" | plant_type=="Wind Onshore" | *plant_type=="Thermal Solar" 
-
-*sort owner firm_code 
-*bysort owner: replace firm_code=firm_code[_n-1] if missing(firm_code)
-*owner is replaced by vin_SM (sujeto del mercado) if missing
+***Clean owner names
+*Replace owner by vin_SM (sujeto del mercado) if missing
 replace owner = vin_SM if missing(owner)
-
 *manual correction if owner is written in two different versions
 replace owner="BIEFFE MEDITAL" if owner=="TEC 94 - BIEFFE MEDITAL"
 replace owner="ENERGIAS VILLA DEL CAMPO" if owner=="ENERGIAS DE LA VILLA DE CAMPO COMERCIALIZADORA SLU"
@@ -165,14 +158,22 @@ replace owner="RESPIRA ENERGIA" if strpos(owner, "RESPIRA ENERGIA")
 replace owner="AUDAX" if strpos(owner, "AUDAX")
 replace owner="WIND TO MARKET" if strpos(owner, "WIND TO MARKET")
 replace owner="SHELL" if strpos(owner, "SHELL")
-
-
+cd "C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review\Data\Units"
 save unitdata.dta, replace
 
-**account for mututal ownership by creating four different lists to be merged with curvas
+***Create dummy if a firm owns solar or wind power plants
+gen s=0
+gen w=0
+replace s=1 if strpos(plant_type,"Solar")==1
+replace w=1 if strpos(plant_type,"Wind")==1
+bysort owner: egen solar=max(s)
+bysort owner: egen wind=max(w)
+drop w s
+
+***Account for mututal ownership by creating four different lists to be merged with bidding data
 sort unit
 duplicates drop unit, force
-save unitdata1, replace
+save unitdata1.dta, replace
 clear
 use unitdata.dta
 merge m:1 unit owner using unitdata1.dta
@@ -204,20 +205,23 @@ drop _merge
 duplicates drop unit, force
 rename owner owner4
 rename ownership ownership4
-*rename firm_code firm_code4
 save unitdata4.dta, replace
 clear
 use unitdata2.dta
 rename owner owner2
 rename ownership ownership2
-*rename firm_code firm_code2
 save unitdata2.dta, replace
 clear
 use unitdata3.dta
 rename owner owner3
 rename ownership ownership3
-*rename firm_code firm_code3
 save unitdata3, replace
+
+
+
+
+
+
 
 
 
