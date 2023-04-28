@@ -1,7 +1,6 @@
 ******Generate Data Set for Regression for Quantities
 clear
 set more off
-global dirpath="C:/Users/JOHANNS/EnBW AG/C-UE C-UM - Dokumente/Team/Silke/Stata/Spain/Review/Data"
 
 cd "$dirpath/Final"
 gen year=0
