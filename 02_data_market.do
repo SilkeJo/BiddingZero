@@ -1,3 +1,4 @@
+*****Overall market data
 clear all
 
 ****Generation forecast 
@@ -66,7 +67,7 @@ save regen_forecast.dta, replace
 ****Actual generation 
 clear
 gen year=0
-cd "$dirpath/Market-Data/Prepared"
+cd "C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review\Data\Market-Data\Prepared"
 save actual_gen.dta, replace
 
 forvalues y=2017(1)2022 {
@@ -140,7 +141,7 @@ expand 2 if day==27&month==3&hour==2, gen(exp)
 replace hour=3 if exp==1
 drop day2 month2 A A2 B-V date exp*
 sort year month day hour
-cd "$dirpath/Market-Data/Prepared"
+cd "C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review\Data\Market-Data\Prepared"
 append using actual_gen.dta
 drop if missing(hour)
 *handling missing data 
@@ -477,6 +478,8 @@ format month %tm
 
 cd "$dirpath/Final"
 save allmarketdata.dta, replace
+
+
 
 
 
