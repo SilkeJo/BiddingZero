@@ -1,0 +1,171 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review\Data\Final\regressions_quantitites_log.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}28 Apr 2023, 13:01:34
+{txt}
+{com}. use regressions_quant.dta
+{txt}
+{com}. encode owner, gen(firm)
+{txt}
+{com}. xtset firm date_hour 
+{res}
+{col 1}{txt:Panel variable: }{res:firm}{txt: (unbalanced)}
+{p 1 16 2}{txt:Time variable: }{res:date_hour}{txt:, }{res:{bind:01jan2020 08:59:54}}{txt: to }{res:{bind:24dec2020 21:59:03}}{txt:, but with gaps}{p_end}
+{txt}{col 10}Delta: {res}.001 seconds
+{txt}
+{com}. encode unit, gen(unitcode)
+{txt}
+{com}. 
+. *fixed effects
+. xi i.month i.quarter i.hour i.date 
+{txt}i.month{col 19}_Imonth_1-12{col 39}(naturally coded; _Imonth_1 omitted)
+i.quarter{col 19}_Iquarter_1-4{col 39}(naturally coded; _Iquarter_1 omitted)
+i.hour{col 19}_Ihour_8-22{col 39}(naturally coded; _Ihour_8 omitted)
+i.date{col 19}_Idate_21915-22273{col 39}(naturally coded; _Idate_21915 omitted)
+
+{com}. global fe ="_Imonth*"
+{txt}
+{com}. global fe2 ="_Imonth* _Ihour*"
+{txt}
+{com}. 
+. bysort date_hour: gen unique=_n
+{txt}
+{com}. 
+. *labels
+. label var solar_share_fc "Day-ahead forecast solar market share" 
+{txt}
+{com}. label var wind_share_fc "Day-ahead forecast wind market share" 
+{txt}
+{com}. label var afternoon "Afternoon Dummy" 
+{txt}
+{com}. label var weekend "Weekend Dummy" 
+{txt}
+{com}. label var diff_p "Price Difference (Diff)"
+{txt}
+{com}. label var pbid_dummy "Firm dummy (FD)"
+{txt}
+{com}. gen diff_p_x_dummy=diff_p*pbid_dummy
+{txt}
+{com}. label var diff_p_x_dummy "Diff x FD"
+{txt}
+{com}. 
+. 
+. ******0) Prediction of delta_p (difference in day-ahead and intraday market price) 
+. qui reg diff_p solar_share_fc wind_share_fc load_fc_DA _Idate* afternoon /// 
+> if unique==1, robust cluster(date)
+{txt}
+{com}. predict diff_p_hat
+{txt}(option {bf:xb} assumed; fitted values)
+
+{com}. 
+. gen diff_p_hat_x_dummy=diff_p_hat*pbid_dummy
+{txt}
+{com}. label var diff_p_hat_x_dummy "Diff_Hat x FD"
+{txt}
+{com}. 
+. cd "$dirpath/Final/RegressionResults"
+{res}C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review\Data\Final\RegressionResults
+{txt}
+{com}. qui asdoc reg diff_p solar_share_fc wind_share_fc load_fc_DA i.date afternoon if unique==1, robust cluster(date), add(Daily FE, Yes) drop(i.date) dec(3) title(Diff_P_Hat) label nest replace save(Pbid_hat.doc)
+{txt}
+{com}. 
+. 
+. ******1) Difference in capacity offered and sold day-ahead 
+. *Short regression table
+. cd "$dirpath/Final/RegressionResults"
+{res}C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review\Data\Final\RegressionResults
+{txt}
+{com}. qui asdoc reg lnqda2 diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm) dec(3) title(q_da) label nest replace save(capacities.doc)
+{txt}
+{com}. 
+. *Complete regression table
+. qui asdoc reg lnqda2 diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label nest replace save(capacities_all.doc)
+{txt}
+{com}. 
+. qui reg lnqda2 c.diff_p_hat##pbid_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust
+{txt}
+{com}. 
+. *Short regression table
+. qui asdoc reg lnqda2 diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm) dec(3) title(q_da) label nest save(capacities.doc)
+{txt}
+{com}. 
+. *Complete regression table
+. qui asdoc reg lnqda2 diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label nest save(capacities_all.doc)
+{txt}
+{com}. 
+. 
+. ******2) Capacity sold intraday
+. qui reg lnqids c.diff_p##pbid_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust
+{txt}
+{com}. 
+. *Short regression table
+. qui asdoc reg lnqids diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm) dec(3) title(q_ids) label nest  save(capacities.doc)
+{txt}
+{com}. 
+. *Complete regression table
+. qui asdoc reg lnqids diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label nest save(capacities_all.doc)
+{txt}
+{com}. 
+. qui reg lnqids c.diff_p_hat##pbid_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust
+{txt}
+{com}. 
+. *Short regression table
+. qui asdoc reg lnqids diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm) dec(3) title(q_da) label nest save(capacities.doc)
+{txt}
+{com}. 
+. *Complete regression table
+. qui asdoc reg lnqids diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label nest save(capacities_all.doc)
+{txt}
+{com}. 
+. 
+. ******3) Robustness Checks
+. ******Capacity bought intraday
+. qui reg lnqidb c.diff_p##pbid_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust
+{txt}
+{com}. 
+. qui reg lnqidb c.diff_p_hat##pbid_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust
+{txt}
+{com}. 
+. qui asdoc reg lnqidb diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label replace nest save(robustness_idb.doc)
+{txt}
+{com}. 
+. qui asdoc reg lnqidb diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label nest save(robustness_idb.doc)
+{txt}
+{com}. 
+. 
+. *More controls
+. qui asdoc reg lnqda2 diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice oil_share gas_share coal_share other_share i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label nest replace nest save(robustness_mc.doc)
+{txt}
+{com}. 
+. qui asdoc reg lnqda2 diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice oil_share gas_share coal_share other_share i.month i.hour i.firm, robust, add(MonthlyFE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label save(robustness_mc.doc)
+{txt}
+{com}. 
+. qui asdoc reg lnqids diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice oil_share gas_share coal_share other_share i.month i.hour i.firm, robust, add(Monthly FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label save(robustness_mc.doc)
+{txt}
+{com}. 
+. qui asdoc reg lnqids diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice oil_share gas_share coal_share other_share i.month i.hour i.firm, robust, add(Monthly, FE, Yes, Hourly FE, Yes, Firm FE, Yes) drop(i.month i.hour i.firm) dec(3) title(q_da) label save(robustness_mc.doc)
+{txt}
+{com}. 
+. 
+. *Different fixed effects 
+. qui asdoc reg lnqda2 diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.quarter i.date  i.firm, robust, add(Quarterly FE, Yes, Daily FE, Yes, Firm FE, Yes) drop(i.quarter i.date i.firm) dec(3) title(q_da) label nest replace save(robustness_fe.doc)
+{txt}
+{com}. 
+. qui asdoc reg lnqda2 diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.quarter i.date  i.firm, robust, add(Quarterly FE, Yes, Daily FE, Yes, Firm FE, Yes) drop(i.quarter i.date i.firm) dec(3) title(q_da) label nest save(robustness_fe.doc)
+{txt}
+{com}. 
+. qui asdoc reg lnqids diff_p pbid_dummy diff_p_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.quarter i.date  i.firm, robust, add(Quarterly FE, Yes, Daily FE, Yes, Firm FE, Yes) drop(i.quarter i.date i.firm) dec(3) title(q_da) label nest save(robustness_fe.doc)
+{txt}
+{com}. 
+. qui asdoc reg lnqids diff_p_hat pbid_dummy diff_p_hat_x_dummy solar_share wind_share hydro_share load_ACT solar_fc_error wind_fc_error load_fc_error co2price gasprice i.quarter i.date  i.firm, robust, add(Quarterly FE, Yes, Daily FE, Yes, Firm FE, Yes) drop(i.quarter i.date i.firm) dec(3) title(q_da) label nest save(robustness_fe.doc)
+{txt}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\JOHANNS\EnBW AG\C-UE C-UM - Dokumente\Team\Silke\Stata\Spain\Review\Data\Final\regressions_quantitites_log.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}28 Apr 2023, 13:02:26
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
