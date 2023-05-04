@@ -1,6 +1,5 @@
 ********Master Do-File********
 
-***Silke Johanndeiter & Valentin Bertsch***
 ***Bidding zero? An analysis of solar power plants' price bids
 * in the electricity day-ahead market**
 
