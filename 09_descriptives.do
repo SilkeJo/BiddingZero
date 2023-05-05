@@ -105,7 +105,6 @@ graph close
 *Figure 5: Histogram of solar price bids in our sample
 clear 
 cd "$dirpath/Final"
-*use solar_pbids.dta
 use regressions_quant.dta
 hist pbid_max_sol, xtitle("Day-ahead price bids for solar power (€/MWh)", size(small)) ytitle("Density (%)", size(small)) percent graphregion(fcolor(white)) lcolor(nsvy) fcolor(ebblue) xsize(4) width(10) lwidth(0.1) xlabel(,labsize(small)) ylabel(,labsize(small)) ysc(titlegap(*4)) xsc(titlegap(*4))
 cd "$dirpath/Final/Graphs"
