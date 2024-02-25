@@ -7,6 +7,8 @@ clear
 cd "$dirpath/Final"
 log using regressions_quantitites_log, replace
 use regressions_quant.dta
+*Note: due to its large file size, I split this dataset in this repo
+*to get it from the repo you need to: merge 1:1 year month day hour regressions_quant_1.dta using regressions_quant_2.dta 
 encode owner, gen(firm)
 xtset firm date_hour 
 encode unit, gen(unitcode)
