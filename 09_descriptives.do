@@ -24,18 +24,19 @@ sum share if uniquehour==1
 
 
 ****Figures and Tables
-*Figure 3: weekly market data
+*Figure 2: weekly market data
 clear 
 cd "$dirpath/Final"
 use allmarketdata.dta, replace
 drop if year>2020
 drop if year<2020
 
-collapse (mean) mg_price_da2 mg_price_id2* mg_quant* ///
+egen mg_price_id_max=rmean(mg_price_id2*)
+
+collapse (mean) mg_price_da2 mg_price_id2* mg_price_id_max mg_quant* ///
 (sum) coal gas biomass oil hydro pumpedhydro nuclear /// 
 other other_re solar waste wind gen load_ACT, by(week)
 
-egen mg_price_id_max=rmean(mg_price_id2*)
 rename coal Coal
 gen Gas = Coal + gas
 gen Oil = Gas + oil
@@ -76,17 +77,24 @@ ytitle("Average weekly market price (€/MWh)", size(small) axis(2)) ///
 ylabel(,labsize(small) axis(2)) ysc(titlegap(2) r(0 52) axis(2)) ///
 xtitle("Week", size(small)) tlabel(2020w1(7)2020w52,labsize(small) format(%tw)) 
 *xtitle("Week", size(small)) tlabel(2017w1(26)2020w52,labsize(small) format(%tw)) 
-cd "$dirpath/Final/Graphs"
-graph export Fig3_WeeklyMarketData.png, replace width(1328)
+cd "$dirpath/Final/Figures"
+graph export Fig2_WeeklyMarketData.png, replace width(1328)
 graph close
 
-*Figure 4: Violin Plot of Market Prices
+*Table 1: market prices
+clear 
+cd "$dirpath/Market-Data/Prepared"
+use marketprices.dta, replace
+duplicates drop year month day hour, force
+drop if year<2020
+drop if year>2020
+egen mg_price_id_max=rmean(mg_price_id2*)
+sum mg_price_da2 mg_price_id2* mg_price_id_max
+
+*Figure 3: Scatter of Market Prices
 clear 
 cd "$dirpath/Final"
-use allmarketdata.dta, replace
-drop if year>2020
-drop if year<2020
-egen mg_price_id_max=rowmax(mg_price_id2_*)
+
 label var mg_price_da2 "Day-ahead"
 label var mg_price_id_max "Max of 6 intraday Sessions"
 label var mg_price_id2_1 "Intraday 1"
@@ -96,13 +104,14 @@ label var mg_price_id2_4 "Intraday 4"
 label var mg_price_id2_5 "Intraday 5"
 label var mg_price_id2_6 "Intraday 6"
 set scheme s1mono
-vioplot mg_price_da2 mg_price_id_max, ytitle(Market Price (€/MWh), size(medsmall)) ///
-xlabel(,labsize(medsmall)) graphregion(color(white))  
-cd "$dirpath/Final/Graphs"
+twoway (scatter mg_price_da2 mg_price_id_max, leg(off) mcolor(ebblue) msize(small)) (function x, range(mg_price_da2) n(2), leg(off)), ytitle(Market Price (€/MWh), size(medsmall)) ///
+xlabel(0(10)80,labsize(medsmall)) graphregion(color(white))  ///
+xtitle("Day-ahead market price (€/MWh)", size(medsmall)) ytitle("Maximum intraday market price (€/MWh)", size(medsmall)) ylabel(0(10)80,labsize(medsmall)) 
+cd "$dirpath/Final/Figures"
 graph export "Fig4_MarketPrices.png", replace width(1328)
 graph close
 
-*Figure 5: Histogram of solar price bids in our sample
+*Figure 4: Histogram of solar price bids in our sample
 clear 
 cd "$dirpath/Final"
 use regressions_quant.dta
@@ -111,7 +120,7 @@ cd "$dirpath/Final/Graphs"
 graph export "Fig5_HistSolarPbids.png", replace width(1328)
 graph close
 
-*Figure 6: DA and ID quantities 
+*Figure 5: DA and ID quantities 
 clear 
 cd "$dirpath/Final"
 use regressions_quant.dta
@@ -133,10 +142,10 @@ graphregion(fcolor(white)) bar(1, color(eltblue)) bar(2, color(ebblue)) ///
  rows(3) size(small)) bgcolor(white) blabel(bar, format(%4.1f) size(small)) ///
  ysc(titlegap(*4)) 
 cd "$dirpath/Final/Graphs"
-graph export "Fig6_QuantitiesByStrategy.png", replace width(1328)
+graph export "Fig5_QuantitiesByStrategy.png", replace width(1328)
 graph close
 
-***Table 1 
+***Table 2
 replace diff_q_da2 = (diff_q_da2-0.999)/1000 
 replace q_total_sold_id = (q_total_sold_id-0.999)/1000 
 sum diff_q_da2 q_total_sold_id diff_p pbid_dummy load_ACT solar_share wind_share hydro_share /// 
@@ -145,7 +154,7 @@ gasprice solar_fc_error wind_fc_error load_fc_error
 *solar small big retail gas_share coal_share
 
 
-***Figure 7: Maximum accepted price bid for solar and intraday market price
+***Figure 6a: Maximum accepted price bid for solar and intraday market price
 clear
 cd "$dirpath/Final"
 use regressions_quant.dta, replace
@@ -182,7 +191,7 @@ label (3 "Firm #6") label (4 "Firm #4") label (5 "Firm #5") ///
 label (6 "Firm #7") label (7 "Firm #1")) ///
 ysc(titlegap(*4)) xsc(titlegap(*4)) 
 cd "$dirpath/Final/Graphs" 
-graph export "Fig7a_PriceBids_IDPrice.png", replace width(1328)
+graph export "Fig6a_PriceBids_IDPrice.png", replace width(1328)
 graph close
 
 twoway scatter pbid_max_sol pbid_max_a_sol if strpos(owner,"#7"), /// 
@@ -208,11 +217,11 @@ label (3 "Firm #4") label (4 "Firm #2") label (5 "Firm #3") ///
 label (6 "Firm #5") label (7 "Firm #1")) ///
 ysc(titlegap(*4)) xsc(titlegap(*4)) 
 cd "$dirpath/Final/Graphs" 
-graph export "Fig7b_PriceBids.png", replace width(1328)
+graph export "Fig6b_PriceBids.png", replace width(1328)
 graph close
 
 
-*Figure 8: intraday market data
+*Figure 7: intraday market data
 clear 
 cd "$dirpath/Final"
 use allmarketdata.dta
@@ -261,11 +270,11 @@ label(4 "Intraday Session 4") label(5 "Intraday Session 5") ///
 label(6 "Intraday Session 6") label(7 "{&Delta}p")) 
 
 cd "$dirpath/Final/Graphs"
-graph export Fig8_IntradayMarketData.png, replace width(1328)
+graph export Fig7_IntradayMarketData.png, replace width(1328)
 graph close
 
 
-***Tables 4 and 5
+***Tables 3 and 4
 clear
 cd "$dirpath/Final"
 use regressions_price.dta
@@ -274,21 +283,21 @@ sum diff_p_id_da q_total_mg_id load_ACT solar_share wind_share hydro_share gas_s
 drop if pbid_max==0
 sum pbid_max mg_price_id_max load_ACT solar_share wind_share hydro_share gas_share coal_share oil_share other_share co2price gasprice solar_fc_error wind_fc_error load_fc_error $dummies
 
-***Figure 9 and 10
+***Figure 8a and 8b
 bysort year month day hour: egen q_total_supply_unit_a_all=total(q_total_supply_unit_a)
 bysort year month day hour: egen q_total_supply_unit_id_all=total(q_total_supply_unit_id) 
 set scheme s1mono
 scatter q_total_supply_unit_id_all q_total_supply_unit_a_all if pbid_max_a>0, msize(vsmall)  ///
 xtitle("Energy sold day ahead (MWh)", size(small)) msymbol(oh) mcolor(dknavy%30) ytitle("Energy sold intraday (MWh)", size(small)) graphregion(fcolor(white)) xlabel(,labsize(small)) ylabel(,labsize(small)) ysc(titlegap(*4)) xsc(titlegap(*4))
 cd "$dirpath/Final/Graphs"
-graph export "Fig9_ID_quantities.png", replace width(1328)
+graph export "Fig8a_ID_quantities.png", replace width(1328)
 graph close
 
 egen pbid_id_min=rmin(pbid_id_1_S_max pbid_id_2_S_max pbid_id_3_S_max pbid_id_4_S_max pbid_id_5_S_max pbid_id_6_S_max)
 scatter pbid_max pbid_id_min, msize(vsmall) ///
 xtitle("Max Price Bid Day-Ahead(€/MWh)", size(small)) msymbol(oh) mcolor(dknavy%30) ytitle("Min accepted price bid Intraday 1-6 (€/MWh)", size(small)) graphregion(fcolor(white)) xlabel(,labsize(small)) ylabel(,labsize(small)) ysc(titlegap(*4)) xsc(titlegap(*4))
 cd "$dirpath/Final/Graphs"
-graph export "Fig10_ID_pricebids.png", replace width(1328)
+graph export "Fig8b_ID_pricebids.png", replace width(1328)
 graph close
 
 
