@@ -385,6 +385,7 @@ gen year=0
 save prices.dta, replace
 cd "$dirpath/Market-Data/Prepared"
 use prices_da.dta
+duplicates drop year month day hour, force
 merge 1:1 year month day hour using prices_id.dta
 drop _merge
 save prices.dta, replace
@@ -411,6 +412,7 @@ drop if exp5==1&dup==1
 drop if exp6==1&dup==1
 
 drop exp* dup
+save marketprices.dta, replace
 
 *Merge with commodity prices
 merge m:1 year month day using co2prices.dta
